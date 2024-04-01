@@ -198,10 +198,11 @@ class CHMM(object):
 
     def learn_em_T(self, x, a, n_iter=100, term_early=True):
         """Run EM training, keeping E deterministic and fixed, learning T"""
+        stopping_window= 60
         sys.stdout.flush()
         convergence = []
         pbar = trange(n_iter, position=0)
-        log2_lik_old = -np.inf
+        log2_lik_old = [np.inf]*stopping_window
         for it in pbar:
             # E
             log2_lik, mess_fwd = forward(
@@ -219,11 +220,15 @@ class CHMM(object):
             convergence.append(-log2_lik.mean())
             print(f'log likelihood: {-log2_lik.mean()}')
             pbar.set_postfix(train_bps=convergence[-1])
-            if log2_lik.mean() <= log2_lik_old:
+            #If no likelihood change in the past 5 iterations,  break
+            if not any(a > -log2_lik.mean() for a in log2_lik_old):
                 if term_early:
                     print(f'Stopping  early at iteration {it}')
                     break
-            log2_lik_old = log2_lik.mean()
+            if len(convergence)>=5:
+                log2_lik_old = convergence[-stopping_window:]
+            else:
+                log2_lik_old = [np.inf]*stopping_window
         return convergence
 
     def learn_viterbi_T(self, x, a, n_iter=100):
