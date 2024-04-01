@@ -217,9 +217,11 @@ class CHMM(object):
             # M
             self.update_T()
             convergence.append(-log2_lik.mean())
+            print(f'log likelihood: {-log2_lik.mean()}')
             pbar.set_postfix(train_bps=convergence[-1])
             if log2_lik.mean() <= log2_lik_old:
                 if term_early:
+                    print(f'Stopping  early at iteration {it}')
                     break
             log2_lik_old = log2_lik.mean()
         return convergence
@@ -253,8 +255,10 @@ class CHMM(object):
             self.update_T()
 
             convergence.append(-log2_lik.mean())
+            print(-log2_lik.mean())
             pbar.set_postfix(train_bps=convergence[-1])
             if log2_lik.mean() <= log2_lik_old:
+                print(f'EARLY STOPPING: ITERATION {it}')
                 break
             log2_lik_old = log2_lik.mean()
         return convergence
